@@ -70,3 +70,32 @@ create index person_id_index
 create index title_id_index
     on cast_info (title_id);
 
+
+
+SELECT full_name FROM persons;
+
+SELECT full_name FROM persons LIMIT 5;
+
+SELECT * FROM titles AS t WHERE t.primary_title='The Matrix'
+
+SELECT * FROM titles AS t
+WHERE t.primary_title  LIKE 'Star Wars%' and t.title_type = 'movie'
+ORDER BY t.start_year
+
+
+SELECT * FROM titles AS t WHERE t.title_id ='tt0076759'
+
+SELECT t.primary_title, r.avg_rating, r.num_votes
+FROM titles AS t JOIN ratings AS r ON t.title_id=r.title_id
+WHERE
+t.title_type='movie' AND t.start_year = 2021 AND r.num_votes > 10000
+ORDER BY r.avg_rating DESC
+LIMIT 100
+
+
+SELECT t.start_year, AVG(r.avg_rating) as average_rating , COUNT(r.avg_rating) as number_of_movies
+FROM titles AS t JOIN ratings AS r ON t.title_id=r.title_id
+WHERE
+t.title_type='movie' AND r.num_votes > 10000
+GROUP BY t.start_year
+ORDER BY t.start_year DESC
