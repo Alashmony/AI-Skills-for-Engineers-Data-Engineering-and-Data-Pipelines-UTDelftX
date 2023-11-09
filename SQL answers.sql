@@ -99,3 +99,107 @@ WHERE
 t.title_type='movie' AND r.num_votes > 10000
 GROUP BY t.start_year
 ORDER BY t.start_year DESC
+
+
+---------------------------------Assignments ----------------------------------------------------------
+-- Write a query which lists all names (>”primary title”) of all titles released in 1999
+
+select primary_title  
+from main.titles 
+where start_year = 1999
+
+
+select DISTINCT title_type from titles
+
+select * from main.titles 
+
+--Write a query which returns the number of movies (not tv shows, etc) released in 2021
+select count(DISTINCT t.original_title) number_of_movies 
+from main.titles t
+where title_type in ('tvMovie', 'movie') and start_year = 2021
+
+
+--Write a query which counts all movies released in the 2000s (i.e., from 2000 to 2009).
+
+select count(distinct primary_title) num_titles
+from main.titles 
+where title_type in ('tvMovie', 'movie')  and start_year BETWEEN 2000 and 2009
+
+--Write a query which lists all title types (e.g, movie, tvShow, etc) found in the database.
+select DISTINCT title_type from titles
+
+--Write a query which creates a statistic, counting how many titles of each type were released in 2021.
+
+select title_type, count(*) titles_count 
+from titles t
+group by 1
+
+--List all years (without duplicates) when a title containing the words “Star Wars” in its primary title was/will be introduced, and sort them in increasing order.
+
+select DISTINCT t.start_year 
+from main.titles t
+where lower(primary_title) like '%star wars%'
+order by 1
+
+-- Create a statistic, listing all years in which a Star Wars video
+-- game (e.g, video game with Star Wars somewhere in its primary title) was released,
+-- and count the number of games for those years.  Order by year.
+
+--Query shows all games created in this year
+with sw_years as (select DISTINCT t.start_year 
+from main.titles t
+where lower(primary_title) like '%star wars%' and t.title_type = 'videoGame')
+select t.start_year, count(*) games_released
+from main.titles t
+inner join sw_years sw on t.start_year = sw.start_year
+where t.title_type = 'videoGame'
+GROUP by 1
+ORDER by 1
+
+--Query shows star wars games in each year
+select  t.start_year, count(*) games_released
+from main.titles t
+where lower(primary_title) like '%star wars%' and t.title_type = 'videoGame' 
+GROUP by 1
+order by 1
+
+--Write a query which finds all persons which are involved with the “The Matrix” movie.  
+--List their full name and job, e.g.: “Keanu Reeves, actor”. Order by their full name
+
+select DISTINCT p.full_name 
+from main.persons p
+inner join main.cast_info c on c.person_id = p.person_id 
+inner join main.titles t on t.title_id = c.title_id 
+where lower(t.original_title) = 'the matrix' and t.title_type in ('movie', 'tvMovie') 
+order by 1
+
+SELECT * from main.cast_info 
+
+-- List all information about TV show episodes (title_type = ‘tvEpisode’)
+-- produced (job_category = ‘producer’) by ‘Ridley Scott’, 
+-- sorted by descending start year. Show only the first 5 results.
+
+select * 
+from main.titles t
+join main.cast_info c on t.title_id = c.title_id 
+join main.persons p on c.person_id = p.person_id 
+where p.full_name = 'Ridley Scott' and job_category = 'producer' and t.title_type = 'tvEpisode'
+order by t.start_year DESC 
+limit 5
+
+-- List the distinct names (primary_title) of all series which have at least 100 episodes.
+
+select primary_title, count(e.episode_id) episodes_count
+from main.titles t
+join main.episodes e on e.series_id = t.title_id 
+GROUP BY 1
+HAVING count(e.episode_id) >= 100
+
+-- Write a query which exports the primary tittle and average rating of all movies released in 2021 into a CSV file.
+
+COPY (
+select t.primary_title , r.avg_rating 
+from main.titles t
+join main.ratings r on t.title_id = r.title_id  
+where t.start_year = 2021 and t.title_type in ('movie', 'tvMovie')) to 'D:\Courses\edx\ratings.csv' (HEADER, DELIMETER ',');
+
